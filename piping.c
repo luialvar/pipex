@@ -35,16 +35,16 @@ void	here_doc_child(char *limiter, int fd)
 	exit(EXIT_SUCCESS);
 }
 
-void execute_pipeline(char **argv, char **directories, char **envp, int num_cmds, int is_here_doc, int argc) 
+void exe(char **argv, char **directories, char **envp, int ncom_ishere[2])
 {
-    int pipes[num_cmds - 1][2];
+    int pipes[ncom_ishere[0] - 1][2];
     pid_t pid, pid_final;
     int status;
     int i = 0;
 	int j = 0;
 	int fileout = 0;
     // Crear todos los pipes necesarios
-    while (i < num_cmds - 1) 
+    while (i < ncom_ishere[0] - 1) 
 	{
         if (pipe(pipes[i]) == -1) 
 		{
@@ -54,7 +54,7 @@ void execute_pipeline(char **argv, char **directories, char **envp, int num_cmds
         i++;
     }
     i = 0;
-    while (i < num_cmds) 
+    while (i < ncom_ishere[0]) 
 	{
         pid = fork();
 
@@ -67,15 +67,15 @@ void execute_pipeline(char **argv, char **directories, char **envp, int num_cmds
         if (pid == 0) 
 		{ // Proceso hijo
             // Redirigir salida estándar al pipe si no es el último comando
-            if (i < num_cmds - 1) 
+            if (i < ncom_ishere[0] - 1) 
 			{
                 dup2(pipes[i][1], STDOUT_FILENO);
             }
-			if (i == num_cmds - 1) // caso en el que se redirige al archivo
+			if (i == ncom_ishere[0] - 1) // caso en el que se redirige al archivo
 			{
-                if (is_here_doc)
+                if (ncom_ishere[1])
 				{
-					fileout = open(argv[argc - 1], O_WRONLY | O_CREAT | O_APPEND, 0644);
+					fileout = open(argv[ncom_ishere[0] + 2], O_WRONLY | O_CREAT | O_APPEND, 0644);
 					if (fileout < 0)
 					{
 						perror("error file");
@@ -84,9 +84,9 @@ void execute_pipeline(char **argv, char **directories, char **envp, int num_cmds
 					dup2(fileout, STDOUT_FILENO);
 					close(fileout);
 				}
-				if (!is_here_doc)
+				if (!ncom_ishere[1])
 				{
-					fileout = open(argv[argc - 1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+					fileout = open(argv[ncom_ishere[0] + 2], O_WRONLY | O_CREAT | O_TRUNC, 0644);
 					if (fileout < 0)
 					{
 						perror("error file");
@@ -104,11 +104,11 @@ void execute_pipeline(char **argv, char **directories, char **envp, int num_cmds
             }
 			if (i == 0) // caso en el que se lee del filein
 			{
-				if (is_here_doc)
+				if (ncom_ishere[1])
 				{
 					here_doc_child(argv[2], pipes[0][1]);
 				}
-				if (!is_here_doc)
+				if (!ncom_ishere[1])
 				{
 					int filein = open(argv[1], O_RDONLY);
 					if (filein < 0)
@@ -134,7 +134,7 @@ void execute_pipeline(char **argv, char **directories, char **envp, int num_cmds
 
             // Cerrar todos los extremos de los pipes en el proceso hijo
             j = 0;
-            while (j < num_cmds - 1) 
+            while (j < ncom_ishere[0] - 1) 
 			{
                 close(pipes[j][0]);
                 close(pipes[j][1]);
@@ -146,7 +146,7 @@ void execute_pipeline(char **argv, char **directories, char **envp, int num_cmds
         }
 
         // Guardar el PID del último comando para usarlo con waitpid
-        if (i == num_cmds - 1) 
+        if (i == ncom_ishere[0] - 1) 
 		{
             pid_final = pid;
         }
@@ -155,7 +155,7 @@ void execute_pipeline(char **argv, char **directories, char **envp, int num_cmds
 	free_array(directories);
     // Cerrar todos los extremos de los pipes en el proceso padre
     i = 0;
-    while (i < num_cmds - 1) 
+    while (i < ncom_ishere[0] - 1) 
 	{
         close(pipes[i][0]);
         close(pipes[i][1]);
@@ -165,9 +165,9 @@ void execute_pipeline(char **argv, char **directories, char **envp, int num_cmds
     pid_t wpid;       // para saber qué hijo terminó
 int exit_code = 0; // para guardar el código de salida del último comando
 
-// Esperar a los num_cmds hijos, en el orden que terminen
+// Esperar a los ncom_ishere[0] hijos, en el orden que terminen
 i = 0;
-while (i < num_cmds)
+while (i < ncom_ishere[0])
 {
     wpid = waitpid(-1, &status, 0);
     if (wpid < 0)
@@ -179,7 +179,7 @@ while (i < num_cmds)
     // Si el PID que acaba de terminar es el del último comando, guardamos su status
     if (wpid == pid_final)
     {
-        if (WIFEXITED(status))
+        if (WIFEXITED(status)) //evalua si termina normal
             exit_code = WEXITSTATUS(status);
         else
             exit_code = 1; // caso en que no terminó con exit normal

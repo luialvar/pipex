@@ -36,7 +36,7 @@ void	here_doc_child(char *limiter, int fd);
 void	try(char *full_path, char **commands, char **directories, char **envp);
 char	**handle_params_allocation(char *command, char **directories);
 void	execute(char *command, char **directories, char **envp);
-int		check_argc_heredoc(int argc, char **argv, int *i);
-void execute_pipeline(char **argv, char **directories, char **envp, int num_cmds, int is_here_doc, int argc);
+int		check_argc_heredoc(int argc, char **argv);
+void	exe(char **argv, char **directories, char **envp, int ncom_ishere[2]);
 
 #endif

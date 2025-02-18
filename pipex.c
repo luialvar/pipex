@@ -64,11 +64,11 @@ void	execute(char *command, char **directories, char **envp)
 	free_array(params);
 	free_array(directories);
 	write(STDERR_FILENO, command, ft_strlen(command));
-    write(STDERR_FILENO, ": command not found\n", 20);
+	write(STDERR_FILENO, ": command not found\n", 20);
 	exit(127);
 }
 
-int	check_argc_heredoc(int argc, char **argv, int *i) //checkeos iniciales
+int	check_argc_heredoc(int argc, char **argv) //checkeos iniciales
 {
 	int	fileout;
 
@@ -79,10 +79,7 @@ int	check_argc_heredoc(int argc, char **argv, int *i) //checkeos iniciales
 		exit(EXIT_FAILURE);
 	}
 	if (ft_strncmp("here_doc", argv[1], 8) == 0)
-	{
 		fileout = 1;
-		(*i)++;
-	}
 	return (fileout);
 }
 
@@ -90,15 +87,16 @@ int	main(int argc, char **argv, char **envp)
 {
 	int		is_here_doc;
 	char	**directories;
-	int		i;
+	int		ncom_isheredoc[2];
 
-	i = 0;
-	is_here_doc = check_argc_heredoc(argc, argv, &i);
+	is_here_doc = check_argc_heredoc(argc, argv);
 	directories = find_directories(envp);
 	if (!directories)
 	{
 		perror("malloc error");
 		exit(EXIT_FAILURE);
 	}
-	execute_pipeline(argv, directories, envp, argc - 3, is_here_doc, argc);
+	ncom_isheredoc[0] = argc - 3;
+	ncom_isheredoc[1] = is_here_doc;
+	exe(argv, directories, envp, ncom_ishere);
 }

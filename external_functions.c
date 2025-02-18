@@ -44,7 +44,8 @@ size_t	ft_strlcat(char *dst, const char *src, size_t size)
 	return (len + ft_strlen(src));
 }
 
-char	**find_directories(char **envp) // me da todas las posibles rutas de ejecutables
+// da las posibles rutas de ejecutables
+char	**find_directories(char **envp)
 {
 	char	string_path[6];
 	int		pos;
