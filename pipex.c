@@ -40,6 +40,12 @@ char	**handle_params_allocation(char *command, char **directories)
 	return (commands);
 }
 
+
+/*
+Se le pasa el comando entero junto a sus posibles parametros de ejecucion,
+las rutas donde es posible que se encuentre y envp
+
+*/
 void	execute(char *command, char **directories, char **envp)
 {
 	char	**params;
@@ -68,21 +74,6 @@ void	execute(char *command, char **directories, char **envp)
 	exit(127);
 }
 
-int	check_argc_heredoc(int argc, char **argv) //checkeos iniciales
-{
-	int	fileout;
-
-	fileout = 0;
-	if (argc < 5)
-	{
-		perror("Invalid number of parameters");
-		exit(EXIT_FAILURE);
-	}
-	if (ft_strncmp("here_doc", argv[1], 8) == 0)
-		fileout = 1;
-	return (fileout);
-}
-
 int	main(int argc, char **argv, char **envp)
 {
 	int		is_here_doc;
@@ -98,5 +89,5 @@ int	main(int argc, char **argv, char **envp)
 	}
 	ncom_isheredoc[0] = argc - 3;
 	ncom_isheredoc[1] = is_here_doc;
-	exe(argv, directories, envp, ncom_ishere);
+	run(argv, directories, envp, ncom_isheredoc);
 }

@@ -18,6 +18,7 @@ SRCS = pipex.c \
        gnl/get_next_line.c \
        gnl/get_next_line_utils.c \
        external_functions.c \
+       external_functions2.c \
        piping.c \
        ft_split.c \
 
